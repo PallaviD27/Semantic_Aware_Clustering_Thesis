@@ -1,0 +1,440 @@
+Clustered FL EuroSAT run
+Start time: 2026-09-23 08:31:46
+Seed: 42
+Communication rounds: 60
+Local epochs per round: 3
+Warm-up rounds: 3
+Cosine-similarity threshold: -0.005
+Client fraction: 1.0
+Latent noise sigma: 0.5
+Aggregation noise sigma: 0.17
+Single cluster forced: False
+Fixed client groups from round 1: [[0, 1], [2]]
+Automatic clustering enabled: False
+Encoder normalization: group
+Regularizer: enabled=True, norm=l2, strength=2.0, warmup=5
+Channel flags: uplink=True, downlink=True, signal_normalize=False, weight_normalize=False
+Initial clusters: {0: [0, 1], 1: [2]}
+
+===== Communication round 1 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 1: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 1: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 2 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 2: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 2: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 3 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 3: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 3: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 4 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 4: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 4: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 5 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 5: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 5: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 6 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 6: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 6: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 7 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 7: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 7: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 8 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 8: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 8: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 9 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 9: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 9: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 10 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 10: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 10: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 11 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 11: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 11: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 12 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 12: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 12: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 13 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 13: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 13: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 14 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 14: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 14: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 15 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 15: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 15: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 16 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 16: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 16: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 17 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 17: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 17: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 18 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 18: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 18: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 19 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 19: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 19: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 20 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 20: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 20: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 21 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 21: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 21: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 22 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 22: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 22: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 23 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 23: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 23: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 24 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 24: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 24: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 25 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 25: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 25: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 26 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 26: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 26: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 27 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 27: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 27: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 28 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 28: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 28: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 29 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 29: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 29: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 30 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 30: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 30: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 31 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 31: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 31: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 32 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 32: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 32: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 33 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 33: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 33: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 34 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 34: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 34: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 35 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 35: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 35: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 36 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 36: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 36: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 37 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 37: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 37: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 38 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 38: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 38: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 39 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 39: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 39: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 40 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 40: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 40: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 41 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 41: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 41: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 42 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 42: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 42: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 43 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 43: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 43: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 44 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 44: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 44: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 45 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 45: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 45: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 46 =====
+Participating clients: [0, 2, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 46: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 46: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 47 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 47: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 47: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 48 =====
+Participating clients: [0, 1, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 48: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 48: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 49 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 49: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 49: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 50 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 50: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 50: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 51 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 51: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 51: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 52 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 52: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 52: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 53 =====
+Participating clients: [1, 0, 2]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 53: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 53: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 54 =====
+Participating clients: [2, 0, 1]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 54: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 54: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 55 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 55: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 55: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 56 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 56: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 56: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 57 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 57: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 57: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 58 =====
+Participating clients: [1, 2, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 58: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 58: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 59 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 59: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 59: {0: 0, 1: 0, 2: 1}
+
+===== Communication round 60 =====
+Participating clients: [2, 1, 0]
+Clusters before training: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping before training: {0: 0, 1: 0, 2: 1}
+Clusters after round 60: {0: [0, 1], 1: [2]}
+Client-to-cluster mapping after round 60: {0: 0, 1: 0, 2: 1}
+
+Run completed at 2026-09-23 14:21:17
+Total runtime seconds: 20975.6717

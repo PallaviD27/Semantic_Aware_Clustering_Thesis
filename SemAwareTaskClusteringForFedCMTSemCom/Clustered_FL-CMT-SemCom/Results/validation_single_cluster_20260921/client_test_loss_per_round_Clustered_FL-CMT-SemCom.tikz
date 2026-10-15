@@ -1,0 +1,52 @@
+% This file was created with tikzplotlib v0.10.1.post13.
+\begin{tikzpicture}
+
+\definecolor{darkgrey176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgrey204}{RGB}{204,204,204}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={
+  fill opacity=0.8,
+  draw opacity=1,
+  text opacity=1,
+  at={(0.97,0.03)},
+  anchor=south east,
+  draw=lightgrey204
+},
+tick align=outside,
+tick pos=left,
+title={Client-wise TEST Loss per Round Clustered_FL-CMT-SemCom},
+x grid style={darkgrey176},
+xlabel={Communication Rounds},
+xmin=0.95, xmax=2.05,
+xtick style={color=black},
+y grid style={darkgrey176},
+ylabel={Test Loss},
+ymin=1.05216989517212, ymax=1.68277826309204,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180]
+table {%
+1 1.08202719688416
+2 1.08083391189575
+};
+\addlegendentry{Client 0}
+\addplot [semithick, darkorange25512714]
+table {%
+1 1.63966619968414
+2 1.65411424636841
+};
+\addlegendentry{Client 1}
+\addplot [semithick, forestgreen4416044]
+table {%
+1 1.17586576938629
+2 1.13362193107605
+};
+\addlegendentry{Client 2}
+\end{axis}
+
+\end{tikzpicture}

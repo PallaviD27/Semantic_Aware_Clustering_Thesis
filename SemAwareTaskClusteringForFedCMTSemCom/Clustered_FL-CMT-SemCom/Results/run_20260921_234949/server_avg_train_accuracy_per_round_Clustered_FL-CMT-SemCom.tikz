@@ -1,0 +1,55 @@
+% This file was created with tikzplotlib v0.10.1.post13.
+\begin{tikzpicture}
+
+\definecolor{darkgrey176}{RGB}{176,176,176}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+tick align=outside,
+tick pos=left,
+title={Average Train Accuracy vs Communication Rounds Clustered_FL-CMT-SemCom},
+x grid style={darkgrey176},
+xlabel={Communication Rounds},
+xmin=-0.45, xmax=31.45,
+xtick style={color=black},
+y grid style={darkgrey176},
+ylabel={Average Train Accuracy (%)},
+ymin=83.5277777777778, ymax=90.9833333333333,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180]
+table {%
+1 83.8666666666667
+2 86.2555555555555
+3 86.9888888888889
+4 87.3555555555556
+5 87.6555555555556
+6 87.4777777777778
+7 87.8111111111111
+8 87.4888888888889
+9 87.3444444444444
+10 88.1222222222222
+11 88.6777777777778
+12 88.6777777777778
+13 89.6111111111111
+14 89.2333333333333
+15 88.4
+16 89.0222222222222
+17 89.3555555555556
+18 89.7888888888889
+19 89.6777777777778
+20 90.2444444444444
+21 90.4
+22 90.0111111111111
+23 89.9
+24 90.6444444444444
+25 89.8666666666667
+26 89.9111111111111
+27 89.2666666666667
+28 89.6666666666667
+29 90.0666666666667
+30 89.9444444444444
+};
+\end{axis}
+
+\end{tikzpicture}
