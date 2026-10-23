@@ -53,62 +53,8 @@ class AutoEncoder(nn.Module):
 
 # For multi-classification
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-# Shared encoder used by all clients
-# This is what was used for MNIST
-# class SharedEncoder(nn.Module):
-#     def __init__(self):
-#         super(SharedEncoder, self).__init__()
-#         self.net = nn.Sequential(
-#             nn.Linear(28*28, 32), # Changed hidden layer from 128 to 32 to 16
-#             nn.ReLU(),
-#             nn.Linear(32, 8), # This is baseline
-#             # nn.Linear(32,16), # It2
-#             # nn.Linear(64, 8), # IT3
-#             # nn.Linear(64, 16), # IT4
-#             nn.ReLU()
-#
-#         )
-#         self.has_printed_shape = False
-#
-#     def forward(self, x):
-#         x = x.view(x.size(0), -1)  # flatten
-#         x = self.net(x)
-#         if not self.has_printed_shape:
-#             print(f"Encoder latent shape: {x.shape}")
-#             self.has_printed_shape=True
-#
-#         return x  # shared latent representation
-#
-#
-# # Client-specific task head (classification)
-# class TaskHead(nn.Module):
-#     def __init__(self, input_dim, output_dim):
-#         super(TaskHead, self).__init__()
-#         self.fc = nn.Sequential(
-#             nn.Linear(input_dim, 4), # Reducing sie of hidden layer from 50 to 4
-#             nn.ReLU(),
-#             nn.Linear(4, output_dim)   # Reducing sie of hidden layer from 50 to 4
-#         )
-#
-#     def forward(self, x_hat):
-#         return self.fc(x_hat)
-#
-# # Combined model: encoder is shared, head is client-specific
-# class ClientModel(nn.Module):
-#     def __init__(self, shared_encoder, output_dim):
-#         super(ClientModel, self).__init__()
-#         self.encoder = shared_encoder
-#         self.head = TaskHead(input_dim=8, output_dim=output_dim)  # This is baseline
-#     def forward(self, x):
-#         z = self.encoder(x)
-#         logits = self.head(z)
-#         return logits
-
-# New shared encoder and task head for BigEarthNet dataset
 
 class SharedEncoder(nn.Module):
     def __init__(self, args=None):
