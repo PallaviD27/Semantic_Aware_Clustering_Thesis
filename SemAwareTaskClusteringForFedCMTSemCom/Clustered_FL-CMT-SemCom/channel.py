@@ -214,7 +214,7 @@ def los_feature_channel(
     noise_std_rx,
 ):
     """
-    Real, phase-compensated LOS channel for [batch, features].
+    Real, phase-compensated Line of Sight channel for [batch, features].
 
     h: positive amplitude gain
     tx_power: positive transmit power
@@ -249,3 +249,24 @@ def los_feature_channel(
     x_hat = (y / gain) * scale
 
     return x_hat, y
+
+def los_symbol_channel(x_modulated, h, tx_power, noise_std_rx):
+
+    if not math.isfinite(h) or h <= 0:
+        raise ValueError("h must be finite and positive.")
+    if not math.isfinite(tx_power) or tx_power <= 0:
+        raise ValueError("tx_power must be finite and positive.")
+    if not math.isfinite(noise_std_rx) or noise_std_rx < 0:
+        raise ValueError("noise_std_rx must be finite and nonnegative.")
+
+    gain = h * math.sqrt(tx_power)
+
+    noise = torch.randn_like(x_modulated) * noise_std_rx
+
+    y = gain * x_modulated + noise
+
+    x_hat = (y / gain)
+
+    return x_hat, y
+
+

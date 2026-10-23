@@ -1,32 +1,87 @@
+import math
 import torch
 
 
-def quantize_features(x, bits=8, upper_bound=4.0, use_ste=True):
-    """Quantize nonnegative features over [0, upper_bound]."""
-
-    if not isinstance(bits, int) or not 1 <= bits <= 16:
+def _quantizer_step(bits, upper_bound):
+    if type(bits) is not int or not 1 <= bits <= 16:
         raise ValueError("bits must be an integer between 1 and 16.")
 
-    if upper_bound <= 0:
-        raise ValueError("upper_bound must be positive.")
+    if not math.isfinite(upper_bound) or upper_bound <= 0:
+        raise ValueError("upper_bound must be finite and positive.")
 
-    # Number of possible reconstruction values.
-    levels = 2 ** bits
+    return upper_bound / (2**bits - 1)
 
-    # Distance between adjacent reconstruction values.
-    step = upper_bound / (levels - 1)
 
-    # Keep features within the range represented by the quantizer.
+def quantize_features(x, bits=8, upper_bound=4.0):
+    """Transmitter: convert features into integer quantization indices."""
+    step = _quantizer_step(bits, upper_bound)
+
     x_clipped = torch.clamp(x, min=0.0, max=upper_bound)
 
-    # Assign each feature an integer index.
     indices = torch.round(x_clipped / step)
-    indices = indices.clamp(0, levels - 1).to(torch.int64)
+    indices = indices.clamp(0, 2**bits - 1).to(torch.int64)
 
-    # Reconstruct feature values from their indices.
-    x_reconstructed = indices.to(x.dtype) * step
+    return indices
 
-    if use_ste:
-        x_reconstructed = x_reconstructed.detach() + (x_clipped - x_clipped.detach())
 
-    return x_reconstructed, indices
+def dequantize_features(
+    received_indices,
+    bits=8,
+    upper_bound=4.0,
+    *,
+    dtype=torch.float32,
+    ste_reference=None,
+):
+    """Receiver: reconstruct features from successfully received indices."""
+    step = _quantizer_step(bits, upper_bound)
+
+    x_reconstructed = received_indices.to(dtype=dtype) * step
+
+    # Training-only surrogate gradient through quantization.
+    if ste_reference is not None:
+        x_clipped = torch.clamp(
+            ste_reference, min=0.0, max=upper_bound
+        )
+        x_reconstructed = (
+            x_reconstructed.detach()
+            + (x_clipped - x_clipped.detach())
+        )
+
+    return x_reconstructed
+
+def index_to_bits(x_quantized, bits=8):
+    """Converts quantized indices to bits."""
+    if type(bits) is not int or not 1 <= bits <= 16:
+        raise ValueError("bits must be an integer between 1 and 16.")
+    if x_quantized.dtype !=torch.int64:
+        raise TypeError("x_quantized must be torch.int64.")
+    if torch.any((x_quantized < 0)|(x_quantized >= 2**bits)):
+        raise ValueError("x_quantized must be between 0 and 2**bits-1, inclusive")
+
+    shifts = torch.arange(bits-1,-1,-1, device=x_quantized.device)
+
+    x_quantized = x_quantized.unsqueeze(-1)
+
+    bit_rep = (x_quantized >> shifts) & 1
+
+    return bit_rep
+
+
+def bits_to_index(bits_received, bits=8):
+    """Converts bits into indices."""
+    if type(bits) is not int or not 1 <= bits <= 16:
+        raise ValueError("bits must be an integer between 1 and 16.")
+
+    if bits_received.ndim ==0 or bits_received.shape[-1] != bits:
+        raise ValueError("The last dimension must equal bits")
+
+    if torch.any((bits_received !=0) & (bits_received !=1)):
+        raise ValueError("bits_received must contain only 0 or 1")
+
+    shifts = torch.arange(bits-1,-1,-1, device=bits_received.device)
+
+    weights = 2**shifts
+
+    indices = (bits_received.to(torch.int64) * weights).sum(dim=-1)
+
+    return indices

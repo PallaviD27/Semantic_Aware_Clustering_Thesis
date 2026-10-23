@@ -30,6 +30,7 @@ from collections import defaultdict
 from channel import awgn_agg_normalize, awgn_agg_no_normalize
 from channel import rms_power_normalize_weight, snr_db_to_sigma_weight_normalize, snr_db_to_sigma_weight_no_normalize
 import pandas as pd
+from update import collect_class_features, plot_class_gaussianity
 
 print("Python:", sys.version)
 print("Torch version:", torch.__version__)
@@ -559,6 +560,27 @@ if __name__ == '__main__':
                             snr_db_agg=args.snr_db_agg
                         )
                         test_encoder.load_state_dict(noisy_state)
+
+                    if epoch == args.epochs - 1:
+                        collected = collect_class_features(
+                            args=args,
+                            encoder=test_encoder,
+                            dataset=train_dataset,
+                            idxs=user_groups[cid],
+                            client_id=cid,
+                            label_mappings=label_mappings,
+                            num_classes=client_heads[cid].fc[-1].out_features,
+                        )
+
+                        torch.save(
+                            collected,
+                            os.path.join(save_dir, f"class_features_client_{cid}.pt"),
+                        )
+
+                        plot_class_gaussianity(
+                            collected,
+                            os.path.join(save_dir, f"gaussianity_client_{cid}.pdf"),
+                        )
 
                     single_client_head = {cid: client_heads[cid]}
 

@@ -8,8 +8,9 @@ import torch.optim as optim
 from channel import awgn_channel_normalize, awgn_channel_no_normalize, rms_power_normalize_signal
 from channel import awgn_agg_normalize, awgn_agg_no_normalize, rms_power_normalize_weight
 from channel import gradient_norm_regularizersq, gradient_norm_regularizer
-from quantization import quantize_features
-from channel import los_channel_model, los_channel_model_sq, los_feature_channel
+from quantization import quantize_features, _quantizer_step, dequantize_features, index_to_bits, bits_to_index
+from channel import los_channel_model, los_channel_model_sq, los_feature_channel, los_symbol_channel
+from modulation import modulation, demodulation
 # Removed DatasetSplit Class
 
 import csv
@@ -56,19 +57,14 @@ def log_quantization_stats(
 
 
 @torch.no_grad()
-def collect_class_stats(args,
-                        encoder,
-                        dataset,
-                        idxs,
-                        client_id,
-                        label_mappings,
-                        num_classes, ):
-# ----------------Per class per feature statistics for single-label EuroSAT-------------------
-    if args.dataste != "EuroSAT":
-        raise ValueError("Function only supports EuroSAT dataset")
+def collect_class_features(
+    args, encoder, dataset, idxs, client_id,
+    label_mappings, num_classes,
+):
+    if args.dataset != "EuroSAT":
+        raise ValueError("This function currently supports EuroSAT.")
 
     device = next(encoder.parameters()).device
-
     mapping = label_mappings[client_id]
 
     loader = DataLoader(
@@ -82,23 +78,48 @@ def collect_class_stats(args,
         ),
     )
 
-    counts = torch.zeros(num_classes, dtype=torch.long)
-    means = None
-    m2 = None # Sum of squared deviations from each class mean
-
+    feature_batches = []
+    label_batches = []
     was_training = encoder.training
     encoder.eval()
 
     try:
         for images, labels in loader:
-                images = images.to(device)
+            x = encoder(images.to(device))
 
-                features = encoder(images)
+            if args.signal_normalize:
+                x = rms_power_normalize_signal(x)
 
-                if args.signal_normalize:
-                    features = rms_power_normalize_signal(features)
+            # Stop BEFORE quantization/modulation/channel.
+            if x.ndim != 2 or not torch.isfinite(x).all():
+                raise ValueError("Expected finite [batch, features] output.")
 
+            mapped = [
+                mapping(int(y)) if callable(mapping) else mapping[int(y)]
+                for y in labels.detach().cpu().tolist()
+            ]
+            mapped = torch.tensor(mapped, dtype=torch.long)
 
+            if (mapped < 0).any() or (mapped >= num_classes).any():
+                raise ValueError("Mapped labels outside the task-class range.")
+
+            feature_batches.append(x.detach().cpu())
+            label_batches.append(mapped)
+
+    finally:
+        encoder.train(was_training)
+
+    if not feature_batches:
+        raise ValueError(f"Client {client_id} has no calibration samples.")
+
+    return {
+        "features": torch.cat(feature_batches, dim=0),
+        "labels": torch.cat(label_batches, dim=0),
+        "client_id": int(client_id),
+        "num_classes": int(num_classes),
+        "signal_normalize": bool(args.signal_normalize),
+        "stage": "before_quantization",
+    }
 
 
 # Local training on each client; each client train privately
@@ -310,12 +331,15 @@ class LocalUpdate(object):
                 power_before = x.pow(2).mean(dim=1).mean().item()
                 if batch_idx == 0:
                     print(f"Latent power before channel: {power_before:.6f}")
-                # First normalizing
+# ------------------------First normalizing--------------------------------
                 if self.args.signal_normalize:
                     x = rms_power_normalize_signal(x)  # Normalization of latent vector to unit power
 
-                # Then quantizing
-                x_quantized, indices = quantize_features(x, bits=8, upper_bound=4.0, use_ste=True)
+# --------------------------------Then quantizing----------------------------------
+                #x_quantized, indices = quantize_features(x, bits=8, upper_bound=4.0, use_ste=True)
+                indices = quantize_features(x, bits=8,upper_bound=4)
+                # Reconstruction only for logs
+                x_quantized = dequantize_features(indices, bits=8,upper_bound=4,dtype=x.dtype)
                 log_quantization_stats(
                     self.args.quant_stats_path,
                     x,
@@ -327,7 +351,13 @@ class LocalUpdate(object):
                     bits=8,
                     upper_bound=4.0,
                 )
+# ---------------------Then converting quantized indices to Binary-----------------
+                x_bin = index_to_bits(indices, bits=8)
 
+# ---------------------Then converting binary to BPSK symbols--------------------
+                x_sym = modulation(x_bin)
+
+# -------------------------Channel---------------------------------
                 h = float(los_channel_model(
                     Gt=self.args.Gt,
                     Gr=self.args.Gr,
@@ -343,8 +373,8 @@ class LocalUpdate(object):
                 # Target SNR = 0 dB = 1 in linear units.
                 tx_power = sigma_rx ** 2 / h ** 2
 
-                x_hat, y = los_feature_channel(
-                    x_quantized,
+                x_hat, y = los_symbol_channel(
+                    x_sym,
                     h=h,
                     tx_power=tx_power,
                     noise_std_rx=sigma_rx,
@@ -382,11 +412,37 @@ class LocalUpdate(object):
                 # else:
                 #     x_hat = awgn_channel_no_normalize(x, sigma_signal=self.args.sigma_signal, snr_db_signal=self.args.snr_db_signal)
 
-                if batch_idx == 0 and epoch == 0:
-                    print(
-                        f"[Client {self.client_id}] x std={x.std().item():.4f} | noise std={(x_hat - x_quantized).std().item():.4f}")
 
-                outputs = self.head(x_hat)
+
+                # if batch_idx == 0 and epoch == 0: # Old noise diagnostic
+                #     print(
+                #         f"[Client {self.client_id}] x std={x.std().item():.4f} | noise std={(x_hat - x_quantized).std().item():.4f}")
+
+# ---------------------Demodulation after channel-----------------
+                bits_received = demodulation(x_hat)
+# ----------------------- Bits to index conversion------------------
+                received_indices = bits_to_index(bits_received, bits=8)
+# ----------------------Dequantize for reconstruction-------------------
+                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype,
+                                                      ste_reference=x)
+
+#-------------------------------------Diagnostics------------------------------------
+                if batch_idx == 0 and epoch == 0:
+                    with torch.no_grad():
+                        ber = (bits_received != x_bin).float().mean().item()
+
+                        communication_mse = (
+                                y_reconstructed - x_quantized
+                        ).square().mean().item()
+
+                        print(
+                            f"[Client {self.client_id}] "
+                            f"BER={ber:.4f} | "
+                            f"Communication feature MSE={communication_mse:.8f}"
+                        )
+#------------------------------------------------------------------------------------
+
+                outputs = self.head(y_reconstructed)
                 task_loss = self.criterion(outputs, labels)
                 if noise_reg_coeff > 0:
                     regularizer = (
@@ -517,13 +573,23 @@ class LocalUpdate(object):
 
 
                 x = self.encoder(images)
+# --------------------------------------Normalization-------------------------------------
                 power_before = x.pow(2).mean(dim=1).mean().item()
                 if batch_idx == 0:
                     print(f"Latent power before channel: {power_before:.6f}")
                 if self.args.signal_normalize:
                     x = rms_power_normalize_signal(x)  # Normalization of latent vector to unit power
-
-                x_quantized, _ = quantize_features(x, bits=8, upper_bound=4.0, use_ste=False,)
+# ----------------------------------------------------------------------------------------
+# --------------------------------------Quantization-------------------------------------
+                indices = quantize_features(x, bits=8, upper_bound=4.0)
+# -----------------------------------------------------------------------------------------
+# ------------------------Converting index to bits-----------------------------------------
+                x_bin = index_to_bits(indices)
+# -----------------------------------------------------------------------------------------
+# -----------------------------Modulation--------------------------------------------------
+                x_sym = modulation(x_bin)
+# -----------------------------------------------------------------------------------------
+# ----------------------------------Channel------------------------------------------------
 
                 h = float(los_channel_model(
                     Gt=self.args.Gt,
@@ -540,12 +606,20 @@ class LocalUpdate(object):
                 # Target SNR = 0 dB = 1 in linear units.
                 tx_power = sigma_rx ** 2 / h ** 2
 
-                x_hat, y = los_feature_channel(
-                    x_quantized,
+                x_hat, y = los_symbol_channel(
+                    x_sym,
                     h=h,
                     tx_power=tx_power,
                     noise_std_rx=sigma_rx,
                 )
+# ---------------------------------------------------------------------------------
+# -----------------------------Demodulation------------------------------------------
+                bits_received = demodulation(x_hat)
+# ------------------------------------------------------------------------------------
+# ------------------------------Convert bits to indices---------------------------------
+                received_indices = bits_to_index(bits_received, bits=8)
+# ----------------------Dequantize for reconstruction-------------------
+                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype)
 
                 # if self.args.signal_normalize:
                 #
@@ -553,7 +627,7 @@ class LocalUpdate(object):
                 # else:
                 #     x_hat =awgn_channel_no_normalize(x_quantized, sigma_signal=self.args.sigma_signal, snr_db_signal=self.args.snr_db_signal)
 
-                outputs = self.head(x_hat)
+                outputs = self.head(y_reconstructed)
                 batch_loss = self.criterion(outputs, labels)  # mean over batch
                 loss_sum += batch_loss.item() * labels.size(0)  # accumulate by sample
                 count += labels.size(0)
@@ -703,7 +777,19 @@ def test_inference_multitask(
                 if args.signal_normalize:
                     x = rms_power_normalize_signal(x)  # Normalization of latent vector to unit power
 
-                x_quantized, _ = quantize_features(x, bits=8, upper_bound=4.0, use_ste=False,)
+# ----------------------------------------------------------------------------------------
+# --------------------------------------Quantization-------------------------------------
+                indices = quantize_features(x, bits=8, upper_bound=4.0)
+# -----------------------------------------------------------------------------------------
+# ------------------------Converting index to bits-----------------------------------------
+                x_bin = index_to_bits(indices)
+# -----------------------------------------------------------------------------------------
+# -----------------------------Modulation--------------------------------------------------
+                x_sym = modulation(x_bin)
+# -----------------------------------------------------------------------------------------
+# ----------------------------------Channel------------------------------------------------
+
+                # x_quantized, _ = quantize_features(x, bits=8, upper_bound=4.0, use_ste=False,)
 
                 h = float(los_channel_model(
                     Gt=args.Gt,
@@ -720,12 +806,20 @@ def test_inference_multitask(
                 # Target SNR = 0 dB = 1 in linear units.
                 tx_power = sigma_rx ** 2 / h ** 2
 
-                x_hat, y = los_feature_channel(
-                    x_quantized,
+                x_hat, y = los_symbol_channel(
+                    x_sym,
                     h=h,
                     tx_power=tx_power,
                     noise_std_rx=sigma_rx,
                 )
+# ---------------------------------------------------------------------------------
+# -----------------------------Demodulation------------------------------------------
+                bits_received = demodulation(x_hat)
+# ------------------------------------------------------------------------------------
+# ------------------------------Convert bits to indices---------------------------------
+                received_indices = bits_to_index(bits_received, bits=8)
+# ----------------------Dequantize for reconstruction------------------------------
+                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype)
 
                 # if args.signal_normalize:
                 #     x_hat = awgn_channel_normalize(x_quantized, sigma_signal=args.sigma_signal,snr_db_signal=args.snr_db_signal)
@@ -733,7 +827,7 @@ def test_inference_multitask(
                 # else:
                 #     x_hat=awgn_channel_no_normalize(x_quantized, sigma_signal=args.sigma_signal, snr_db_signal=args.snr_db_signal)
 
-                outputs = head(x_hat)
+                outputs = head(y_reconstructed)
                 head = head.to(device)
 
                 # loss returned is mean over the batch -> convert to sum then to per-sample
@@ -772,3 +866,92 @@ def test_inference_multitask(
     avg_acc  = 100.0 * total_correct / total_acc_count if total_acc_count > 0 else 0.0
     avg_loss = total_loss_sum / total_loss_count if total_loss_count > 0 else 0.0
     return avg_acc, avg_loss, client_test_accuracies, client_test_losses
+
+def plot_class_gaussianity(collected, output_path):
+    import numpy as np
+    from statistics import NormalDist
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_pdf import PdfPages
+
+    features = collected["features"].numpy().astype(np.float64)
+    labels = collected["labels"].numpy()
+    client_id = collected["client_id"]
+    normal = NormalDist()
+
+    with PdfPages(output_path) as pdf:
+        for c in range(collected["num_classes"]):
+            class_features = features[labels == c]
+            n_samples, n_features = class_features.shape
+
+            if n_samples < 3:
+                raise ValueError(
+                    f"Client {client_id}, class {c}: "
+                    "need at least 3 samples; many more are preferable."
+                )
+
+            # Gaussian reference quantiles.
+            probabilities = (
+                np.arange(1, n_samples + 1) - 0.5
+            ) / n_samples
+            theoretical = np.array([
+                normal.inv_cdf(float(p)) for p in probabilities
+            ])
+
+            for start in range(0, n_features, 8):
+                fig = Figure(figsize=(12, 14))
+                axes = fig.subplots(4, 4)
+                axes = axes.ravel()
+
+                for slot in range(8):
+                    feature_id = start + slot
+                    hist_ax = axes[2 * slot]
+                    qq_ax = axes[2 * slot + 1]
+
+                    if feature_id >= n_features:
+                        hist_ax.set_visible(False)
+                        qq_ax.set_visible(False)
+                        continue
+
+                    values = class_features[:, feature_id]
+                    mean = values.mean()
+                    std = values.std(ddof=1)
+
+                    hist_ax.hist(
+                        values, bins=30, density=True,
+                        alpha=0.65, color="steelblue",
+                    )
+                    hist_ax.set_title(f"Feature {feature_id}: histogram")
+
+                    if std <= 1e-12:
+                        qq_ax.text(
+                            0.1, 0.5, "Constant / near-constant feature",
+                            transform=qq_ax.transAxes,
+                        )
+                        continue
+
+                    grid = np.linspace(
+                        min(values.min(), mean - 3 * std),
+                        max(values.max(), mean + 3 * std),
+                        200,
+                    )
+                    gaussian_pdf = np.exp(
+                        -0.5 * ((grid - mean) / std) ** 2
+                    ) / (std * np.sqrt(2 * np.pi))
+                    hist_ax.plot(grid, gaussian_pdf, color="darkorange")
+
+                    observed = np.sort((values - mean) / std)
+                    qq_ax.plot(theoretical, observed, ".", markersize=2)
+                    qq_ax.plot(
+                        theoretical, theoretical, "--", color="darkorange"
+                    )
+                    qq_ax.set_title(f"Feature {feature_id}: Gaussian Q–Q")
+                    qq_ax.set_xlabel("Gaussian quantiles")
+                    qq_ax.set_ylabel("Standardized feature quantiles")
+
+                fig.suptitle(
+                    f"Client {client_id} | Task class {c} | "
+                    f"{n_samples} images | Before quantization"
+                )
+                fig.tight_layout(rect=(0, 0, 1, 0.97))
+                pdf.savefig(fig)
+                fig.clear()
