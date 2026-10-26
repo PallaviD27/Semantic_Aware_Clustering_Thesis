@@ -21,13 +21,14 @@ from pathlib import Path
 def log_quantization_stats(
     path, x, x_quantized, *,
     client_id, global_round, epoch, batch_idx,
-    bits=8, upper_bound=4.0,
+    bits=8,lower_bound=-4.0, upper_bound=4.0,
 ):
     """x is the feature tensor immediately before quantization."""
     x = x.detach().float()
     x_quantized = x_quantized.detach().float()
 
-    clipped = (x < 0.0) | (x > upper_bound)
+    # clipped = (x < 0.0) | (x > upper_bound)
+    clipped = (x < lower_bound) | (x > upper_bound)
     error = x_quantized - x
 
     row = {
@@ -80,12 +81,22 @@ def collect_class_features(
 
     feature_batches = []
     label_batches = []
+    raw_feature_batches = []
+    mu_batches = []
+    ln_var_batches = []
     was_training = encoder.training
     encoder.eval()
 
     try:
         for images, labels in loader:
-            x = encoder(images.to(device))
+            # x = encoder(images.to(device))
+            # Reparameterization
+            mu, ln_var = encoder(images.to(device))
+            x = reparameterize(mu, ln_var)
+
+            raw_feature_batches.append(x.detach().cpu())
+            mu_batches.append(mu.detach().cpu())
+            ln_var_batches.append(ln_var.detach().cpu())
 
             if args.signal_normalize:
                 x = rms_power_normalize_signal(x)
@@ -114,13 +125,22 @@ def collect_class_features(
 
     return {
         "features": torch.cat(feature_batches, dim=0),
+        "features_before_normalization": torch.cat(
+            raw_feature_batches, dim=0
+        ),
+        "mu": torch.cat(mu_batches, dim=0),
+        "ln_var": torch.cat(ln_var_batches, dim=0),
         "labels": torch.cat(label_batches, dim=0),
         "client_id": int(client_id),
         "num_classes": int(num_classes),
         "signal_normalize": bool(args.signal_normalize),
         "stage": "before_quantization",
+        "sampling": "one sample per image",
     }
-
+def reparameterize(mu, ln_var):
+    std = torch.exp(0.5 * ln_var)
+    eps = torch.randn_like(std)
+    return mu + std * eps
 
 # Local training on each client; each client train privately
 class LocalUpdate(object):
@@ -313,7 +333,11 @@ class LocalUpdate(object):
                 # loss = self.criterion(outputs, labels) # FL Loss - Client's batch loss; Cross-Entropy
 
                 # With AWGN noise
-                x = self.encoder(images)
+                # x = self.encoder(images)
+
+                # With Reparameterization
+                mu, ln_var = self.encoder(images)
+                x = reparameterize(mu, ln_var)
 
 # -----------Inspecting features for quantization ------------
                 if epoch ==0 and batch_idx == 0:
@@ -337,9 +361,9 @@ class LocalUpdate(object):
 
 # --------------------------------Then quantizing----------------------------------
                 #x_quantized, indices = quantize_features(x, bits=8, upper_bound=4.0, use_ste=True)
-                indices = quantize_features(x, bits=8,upper_bound=4)
+                indices = quantize_features(x, bits=8,lower_bound=-4.0,upper_bound=4)
                 # Reconstruction only for logs
-                x_quantized = dequantize_features(indices, bits=8,upper_bound=4,dtype=x.dtype)
+                x_quantized = dequantize_features(indices, bits=8,lower_bound=-4.0,upper_bound=4,dtype=x.dtype)
                 log_quantization_stats(
                     self.args.quant_stats_path,
                     x,
@@ -382,8 +406,11 @@ class LocalUpdate(object):
 
                 # if batch_idx == 0:
                 with torch.no_grad():
+                    # clipped_fraction = (
+                    # (x < 0.0) | (x > 4.0)
+                    # ).float().mean().item()
                     clipped_fraction = (
-                    (x < 0.0) | (x > 4.0)
+                            (x < -4.0) | (x > 4.0)
                     ).float().mean().item()
 
                     quantization_mse = (
@@ -423,7 +450,7 @@ class LocalUpdate(object):
 # ----------------------- Bits to index conversion------------------
                 received_indices = bits_to_index(bits_received, bits=8)
 # ----------------------Dequantize for reconstruction-------------------
-                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype,
+                y_reconstructed = dequantize_features(received_indices, bits=8,lower_bound=-4.0, upper_bound=4, dtype=x.dtype,
                                                       ste_reference=x)
 
 #-------------------------------------Diagnostics------------------------------------
@@ -572,7 +599,10 @@ class LocalUpdate(object):
                         )
 
 
-                x = self.encoder(images)
+                # x = self.encoder(images)
+                # Reparameterization
+                mu, ln_var = self.encoder(images)
+                x = reparameterize(mu, ln_var)
 # --------------------------------------Normalization-------------------------------------
                 power_before = x.pow(2).mean(dim=1).mean().item()
                 if batch_idx == 0:
@@ -581,7 +611,7 @@ class LocalUpdate(object):
                     x = rms_power_normalize_signal(x)  # Normalization of latent vector to unit power
 # ----------------------------------------------------------------------------------------
 # --------------------------------------Quantization-------------------------------------
-                indices = quantize_features(x, bits=8, upper_bound=4.0)
+                indices = quantize_features(x, bits=8,lower_bound=-4.0, upper_bound=4.0)
 # -----------------------------------------------------------------------------------------
 # ------------------------Converting index to bits-----------------------------------------
                 x_bin = index_to_bits(indices)
@@ -619,7 +649,7 @@ class LocalUpdate(object):
 # ------------------------------Convert bits to indices---------------------------------
                 received_indices = bits_to_index(bits_received, bits=8)
 # ----------------------Dequantize for reconstruction-------------------
-                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype)
+                y_reconstructed = dequantize_features(received_indices, bits=8,lower_bound=-4.0, upper_bound=4, dtype=x.dtype)
 
                 # if self.args.signal_normalize:
                 #
@@ -771,7 +801,10 @@ def test_inference_multitask(
                 # outputs = model(images)
 
                 # With noise
-                x = encoder(images)
+                # x = encoder(images)
+                # Reparameterization
+                mu, ln_var = encoder(images)
+                x = reparameterize(mu, ln_var)
                 power_before = x.pow(2).mean(dim=1).mean().item()
                 print(power_before)
                 if args.signal_normalize:
@@ -779,7 +812,7 @@ def test_inference_multitask(
 
 # ----------------------------------------------------------------------------------------
 # --------------------------------------Quantization-------------------------------------
-                indices = quantize_features(x, bits=8, upper_bound=4.0)
+                indices = quantize_features(x, bits=8,lower_bound=-4.0,upper_bound=4.0)
 # -----------------------------------------------------------------------------------------
 # ------------------------Converting index to bits-----------------------------------------
                 x_bin = index_to_bits(indices)
@@ -819,7 +852,7 @@ def test_inference_multitask(
 # ------------------------------Convert bits to indices---------------------------------
                 received_indices = bits_to_index(bits_received, bits=8)
 # ----------------------Dequantize for reconstruction------------------------------
-                y_reconstructed = dequantize_features(received_indices, bits=8, upper_bound=4, dtype=x.dtype)
+                y_reconstructed = dequantize_features(received_indices, bits=8,lower_bound=-4.0, upper_bound=4, dtype=x.dtype)
 
                 # if args.signal_normalize:
                 #     x_hat = awgn_channel_normalize(x_quantized, sigma_signal=args.sigma_signal,snr_db_signal=args.snr_db_signal)

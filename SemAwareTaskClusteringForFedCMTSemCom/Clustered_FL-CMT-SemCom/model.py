@@ -52,7 +52,7 @@ class AutoEncoder(nn.Module):
 
 
 # For multi-classification
-
+# This is the one currently being used in the setup
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -101,6 +101,9 @@ class SharedEncoder(nn.Module):
         # Each 15 dimension is replaced by one avg value
 
         self.global_pool =nn.AdaptiveAvgPool2d((1,1))
+        # For Reparameterization
+        self.mu_head = nn.Linear(self.output_dim, self.output_dim)
+        self.logvar_head = nn.Linear(self.output_dim, self.output_dim)
         # Output [batch_size, 128, 1,1]
 
         self.has_printed_shape = False
@@ -115,8 +118,10 @@ class SharedEncoder(nn.Module):
         if not self.has_printed_shape:
             print(f"Encoder latent shape: {x.shape}")
             self.has_printed_shape = True
+        mu = self.mu_head(x)
+        ln_var = self.logvar_head(x)
 
-        return x
+        return mu, ln_var
 
 class TaskHead(nn.Module):
     def __init__(self,input_dim, output_dim):
