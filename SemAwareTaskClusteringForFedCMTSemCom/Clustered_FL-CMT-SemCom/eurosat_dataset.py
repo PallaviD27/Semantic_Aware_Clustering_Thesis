@@ -358,7 +358,9 @@ def build_eurosat_client_partitions(
 
 
 def build_eurosat_label_mappings(client_tasks):
-    """Map each global EuroSAT class index to a local task-head index."""
+    """Map each global EuroSAT class index to a local task-head index.
+    So if global class indices for example for client 0 are 1,2 and 5,
+    the local indices would be 0,1 and 2"""
 
     return {
         client_id: {

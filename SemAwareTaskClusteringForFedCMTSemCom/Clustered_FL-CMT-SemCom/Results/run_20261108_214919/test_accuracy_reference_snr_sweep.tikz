@@ -1,0 +1,16 @@
+\begin{tikzpicture}
+\begin{axis}[
+  xlabel={Reference SNR (dB)},
+  ylabel={Test accuracy (\%)},
+  ymin=0, ymax=101,
+  grid=major,
+  legend pos=south east,
+]
+\addplot+[mark=*] coordinates {(0.00000000,87.48571429) (5.00000000,91.57142857) (10.00000000,91.57142857) (15.00000000,91.57142857) (20.00000000,91.57142857)};
+\addlegendentry{Client 0}
+\addplot+[mark=*] coordinates {(0.00000000,62.82857143) (5.00000000,71.25714286) (10.00000000,71.25714286) (15.00000000,71.25714286) (20.00000000,71.25714286)};
+\addlegendentry{Client 1}
+\addplot+[mark=*] coordinates {(0.00000000,91.22857143) (5.00000000,95.71428571) (10.00000000,95.71428571) (15.00000000,95.71428571) (20.00000000,95.71428571)};
+\addlegendentry{Client 2}
+\end{axis}
+\end{tikzpicture}

@@ -582,6 +582,62 @@ if __name__ == '__main__':
                             os.path.join(save_dir, f"gaussianity_client_{cid}.pdf"),
                         )
 
+                        # Save the encoder that generated the features
+                        # and its matching client task head.
+                        checkpoint = {
+                            "client_id": int(cid),
+                            "round": int(epoch + 1),
+                            "num_classes": int(
+                                client_heads[cid].fc[-1].out_features
+                            ),
+                            "encoder_state_dict": {
+                                name: value.detach().cpu().clone()
+                                for name, value in test_encoder.state_dict().items()
+                            },
+                            "head_state_dict": {
+                                name: value.detach().cpu().clone()
+                                for name, value in client_heads[cid].state_dict().items()
+                            },
+                            "signal_normalize": bool(args.signal_normalize),
+                            "test_indices": sorted(
+                                int(index) for index in test_user_groups[cid]
+                            ),
+                        }
+
+                        torch.save(
+                            checkpoint,
+                            os.path.join(
+                                save_dir, f"client_{cid}_checkpoint.pt"
+                            ),
+                        )
+
+                        # Collect test features before quantization.
+                        with torch.random.fork_rng():
+                            with torch.no_grad():
+                                test_collected = collect_class_features(
+                                    args=args,
+                                    encoder=test_encoder,
+                                    dataset=test_dataset,
+                                    idxs=test_user_groups[cid],
+                                    client_id=cid,
+                                    label_mappings=label_mappings,
+                                    num_classes=client_heads[cid].fc[-1].out_features,
+                                )
+
+                        test_collected["split"] = "test"
+
+                        torch.save(
+                            test_collected,
+                            os.path.join(
+                                save_dir, f"test_features_client_{cid}.pt"
+                            ),
+                        )
+
+                        print(
+                            f"Client {cid}: saved checkpoint and "
+                            f"{len(test_collected['labels'])} test feature vectors."
+                        )
+
                     single_client_head = {cid: client_heads[cid]}
 
                     _, _, client_test_accuracies, client_test_losses = test_inference_multitask(
