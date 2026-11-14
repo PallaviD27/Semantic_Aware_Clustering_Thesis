@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 
 from quantization import quantize_features, dequantize_features
-run_dir = Path(r".\Results\run_20261108_214919")
+run_dir = Path(r".\Results\run_20261108_214919\BudgetFactor50_2dBInterval")
 all_client_stats = {}
 
 for client_id in range(3):

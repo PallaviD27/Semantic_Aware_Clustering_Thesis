@@ -5,7 +5,7 @@ from channel import los_channel_model
 import json
 from SNRSweep import sigma_sweep
 
-run_dir = Path(r".\Results\run_20261108_214919")
+run_dir = Path(r".\Results\run_20261108_214919\BudgetFactor50_2dBInterval")
 gain_path = run_dir / "discriminant_gain_table.csv"
 
 client_gains = {}
@@ -83,11 +83,11 @@ for cid in client_gains:
 
 print("Fixed reference energy:", baseline_energy)
 
-snr_points = [-20, -15, -10, -5, 0, 5, 10, 15, 20]
-
+snr_points = [-20,-18,-16,-14,-12,-10,-8,-6,-4,-2, 0, 2,4,6,8,10,12,14, 16,18,20]
+# snr_points = [-20,-15,-10,-5,0, 5,10,15,20]
 # Start with ONE fixed energy budget to understand the SNR sweep.
-budget_factor = 1.0
-# budget_factor = 4.0
+# budget_factor = 1.0
+budget_factor = 50.0
 energy_budget = budget_factor * baseline_energy
 
 # Separate filename preserves your earlier budget-sweep results.
