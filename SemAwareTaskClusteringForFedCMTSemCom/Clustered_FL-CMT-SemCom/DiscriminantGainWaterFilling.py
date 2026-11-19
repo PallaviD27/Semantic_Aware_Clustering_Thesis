@@ -84,6 +84,21 @@ for client_id in range(3):
             min_eigenvalue = eigenvalues.min().item()
             max_eigenvalue = eigenvalues.max().item()
 
+            condition_number = (
+                max_eigenvalue / min_eigenvalue
+                if min_eigenvalue > 0
+                else float("inf")
+            )
+
+            if client_id == 2 and bits in [3, 4]:
+                print(
+                    f"Client {client_id} | Class {class_id} | "
+                    f"Bits {bits} | "
+                    f"Min eigenvalue: {min_eigenvalue:.6e} | "
+                    f"Max eigenvalue: {max_eigenvalue:.6e} | "
+                    f"Condition number: {condition_number:.6e}"
+                )
+
             print(
                 f"Client {client_id}, class {class_id}, {bits} bits: "
                 f"min eigenvalue={min_eigenvalue:.6g}, "
@@ -197,3 +212,21 @@ plt.tight_layout()
 # Save high-res figure for your paper
 plt.savefig(run_dir / "dg_vs_bits.png", dpi=300)
 plt.show()
+
+import pandas as pd
+run_dir = Path(r".\Results\run_20261108_214919")
+df = pd.read_csv(f"{run_dir}/discriminant_gain_wa_table.csv")
+df = df.sort_values(["client_id", "bits"])
+
+df["first_difference"] = (
+    df.groupby("client_id")["gain"].shift(-1)
+    - df["gain"]
+)
+
+df["second_difference"] = (
+    df.groupby("client_id")["gain"].shift(-2)
+    - 2 * df.groupby("client_id")["gain"].shift(-1)
+    + df["gain"]
+)
+
+print(df)
